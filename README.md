@@ -1,6 +1,6 @@
 # Whonet Data Cleaning
 
-##How To Use:
+How To Use:
 1. Clone via GitHub Desktop.  
 2. First, run GetFileFromDB.R to obtain the raw data from the local server.  
 3. Once the process is complete, you can find the file in the site_df folder.  
