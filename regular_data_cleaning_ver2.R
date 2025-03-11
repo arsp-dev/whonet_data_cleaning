@@ -17,7 +17,7 @@ setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
 
 #load data
-df <- read.csv("site_df/BGH_raw_df1.csv")
+df <- read.csv("site_df/BRH_raw_df.csv")
 
 #change column names case to upper
 names(df) <- toupper(names(df))
@@ -25,17 +25,46 @@ df$INSTITUT <- toupper(df$INSTITUT)
 
 
 # Convert mixed formats to YYYY-MM-DD
-df$DATE_BIRTH <- ifelse(grepl("-", df$DATE_BIRTH), format(as.Date(ymd_hm(df$DATE_BIRTH))), 
-                        format(as.Date(mdy_hm(df$DATE_BIRTH))))
+df$DATE_BIRTH <- ifelse(
+  grepl("-", df$DATE_BIRTH), 
+  format(as.Date(substr(df$DATE_BIRTH, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
+  format(as.Date(mdy(df$DATE_BIRTH)))            # Handle MM/DD/YYYY
+)
 
-df$DATE_DATA <- ifelse(grepl("-", df$DATE_DATA), format(as.Date(ymd_hms(df$DATE_DATA))), 
-                       format(as.Date(mdy_hm(df$DATE_DATA))))
 
-df$DATE_ADMIS <- ifelse(grepl("-", df$DATE_ADMIS), format(as.Date(ymd_hms(df$DATE_ADMIS))), 
-                        format(as.Date(mdy_hm(df$DATE_ADMIS))))
+df$DATE_DATA <- ifelse(
+  grepl("-", df$DATE_DATA), 
+  format(as.Date(substr(df$DATE_DATA, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
+  format(as.Date(mdy(df$DATE_DATA)))            # Handle MM/DD/YYYY
+)
 
-df$SPEC_DATE <- ifelse(grepl("-", df$SPEC_DATE), format(as.Date(ymd_hms(df$SPEC_DATE))), 
-                       format(as.Date(mdy_hm(df$SPEC_DATE))))
+
+df$DATE_ADMIS <- ifelse(
+  grepl("-", df$DATE_ADMIS), 
+  format(as.Date(substr(df$DATE_ADMIS, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
+  format(as.Date(mdy(df$DATE_ADMIS)))            # Handle MM/DD/YYYY
+)
+
+
+df$SPEC_DATE <- ifelse(
+  grepl("-", df$SPEC_DATE), 
+  format(as.Date(substr(df$SPEC_DATE, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
+  format(as.Date(mdy(df$SPEC_DATE)))            # Handle MM/DD/YYYY
+)
+
+
+
+#df$DATE_BIRTH <- ifelse(grepl("-", df$DATE_BIRTH), format(as.Date(ymd_hm(df$DATE_BIRTH))), 
+#                        format(as.Date(mdy_hm(df$DATE_BIRTH))))
+
+
+
+#remove NAN values
+df[df == 'nan'] <- ''
+df[df == 'NaN'] <- ''
+df[df == 'NaT'] <- ''
+df[is.na(df)] <- ''
+
 
 
 df_clean <- df
@@ -165,14 +194,13 @@ pheno_cols <- c('BETA_LACT','MRSA','INDUC_CLI','X_MECA','AMPC','X_MRSE','X_CARB'
 
 df_clean <- df_clean %>%
   mutate(across(all_of(pheno_cols), ~ case_when(
-    . == 1 ~ "+",
-    . == 0 ~ "-",
-    tolower(.) == "p" ~ "+",  # Replace P or p with +
-    tolower(.) == "n" ~ "-",  # Replace N or n with -
-    tolower(.) == "y" ~ "+",  # Replace y or Y with +
-    tolower(.) == "yes" ~ "+",  # Replace YES or yes with +
-    tolower(.) == "n" ~ "-",  # Replace N or n with -
-    tolower(.) == "no" ~ "-",  # Replace NO or no with -
+    as.character(.) == "1" ~ "+",
+    as.character(.) == "0" ~ "-",
+    tolower(as.character(.)) == "p" ~ "+",  # Replace P or p with +
+    tolower(as.character(.)) == "n" ~ "-",  # Replace N or n with -
+    tolower(as.character(.)) == "y" ~ "+",  # Replace y or Y with +
+    tolower(as.character(.)) == "yes" ~ "+",  # Replace YES or yes with +
+    tolower(as.character(.)) == "no" ~ "-",  # Replace NO or no with -
     . %in% c("+", "-") ~ .,   # Keep existing + or - values
     TRUE ~ ""                 # Replace all other values with blank
   )))
@@ -252,7 +280,7 @@ names(df_clean)[names(df_clean) == 'SPEC_CODE.y'] <- 'SPEC_CODE'
 
 
 #Check and Correct WARD, DEPARTMENT, AND WARD TYPE
-df_ward <- read.xlsx("reference/2024_DATA_ward.xlsx", sheetName = 'BGH')
+df_ward <- read.xlsx("reference/2024_DATA_ward.xlsx", sheetName = 'BRH')
 df_ward <- subset(df_ward, select = c('WARD', 'S_WARD', 'DEPARTMENT', 'WARD_TYPE'))
 df_ward$WARD_TYPE <- tolower(df_ward$WARD_TYPE) 
 
@@ -428,9 +456,9 @@ df_clean[df_clean == 'NaT'] <- ''
 df_clean[is.na(df_clean)] <- ''
 
 #INSTIT NAN to Site code
-df_clean$INSTITUT[df_clean$INSTITUT == 'NAN'] <- 'BGH'
+df_clean$INSTITUT[df_clean$INSTITUT == 'NAN'] <- 'BRH'
 
-writexl::write_xlsx(df_clean,  path ="output/BGH_data_cleaned.xlsx")
+writexl::write_xlsx(df,  path ="output/df_sample.xlsx")
 
 
 
