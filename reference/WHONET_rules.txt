@@ -1,0 +1,120 @@
+ABX_rule:
+
+clear all ABX entry with R, I, S, NS (done)
+
+SPN rule:
+for organism spn
+
+PEN_ND10 != '' move value to OXA_ND1 (done)
+
+
+if organism == 'spn' and spec_type != 'qc'
+	if oxa_nd1 >=20 and pen_nm == ''
+		then pen_nd10 = 'S'
+
+MRSA (done)
+for organism == 'sau' or 'slu'
+	if FOX_ND30 >= 22 then  OXA_ND1 == 'S'
+	if FOX_ND30 <= 21 then  OXA_ND1 == 'R'
+
+for organism == 'sau'
+
+is + if OXA_NM >= 4 OR OXA_ND1 == 'R'OR FOX_ND30 <=21 OR FOX_NM >= 8
+
+is - if OXA_NM <= 2, OXA_ND1 == 'S', FOX_ND30 >=22, FOX_NM <= 4
+
+Other phenotypic tests: (done)
+clean all other
+`
+[
+
+accepted values
++ or -
+
+1 = +
+0 = -
+
+def patient_id_transform(row): (done)
+    if row['patient_id'] == '7777777' or row['patient_id'] == 7777777:
+        row['patient_id'] = ''
+    return row
+
+def summary_err_gender(row): (done)
+    sex = ['m','f']
+    if row['sex'] not in sex:
+        return row
+
+ def date_birth_2_digit_to_4(date,age):
+    if date != '':
+        if 'w' in str(age) or 'W' in str(age) or 'd' in str(age) or 'D' in str(age) or 'm' in str(age) or 'M' in str(age) or 'nb' in str(age) or 'NB' in str(age) or 'y' in str(age):
+            return datetime.strptime(date,'%d-%b-%y').strftime('20%y-%m-%d')
+        elif  float(age) >= 0 and float(age) < 19:
+            return datetime.strptime(date,'%d-%b-%y').strftime('20%y-%m-%d')
+        elif float(age) >= 19:
+            return datetime.strptime(date,'%d-%b-%y').strftime('19%y-%m-%d')
+    else:
+        return ''
+    
+# lambda function for origin
+def origin_transform(row,lab_chk,whonet_region_island,sentinel_site_esbl,esbl_site):
+    if  row['laboratory'].upper() in lab_chk:
+        row['region'] = whonet_region_island['REGION'][lab_chk.index(row['laboratory'].upper() )]
+        row['island'] = whonet_region_island['ISLAND'][lab_chk.index(row['laboratory'].upper() )]
+        # print(esbl_site.index(row['laboratory'].upper() ))
+        # print([lab_chk.index(row['laboratory'].upper() )])
+        if (pd.isna(row['esbl']) == True or row['esbl'] == '') and sentinel_site_esbl['ESBL_RESULT'][esbl_site.index(row['laboratory'].upper() )] == 'YES':
+            row['esbl'] = '-'
+
+        if row['esbl'] == 'P' or row['esbl'] == 'p': (done)
+            row['esbl'] = '+'
+        
+        if row['esbl'] == 'N' or row['esbl'] == 'n': (done)
+            row['esbl'] = '-'
+    
+    else:
+        if  row['institut'].upper() in lab_chk:
+            row['region'] = whonet_region_island['REGION'][lab_chk.index(row['institut'].upper() )]
+            row['island'] = whonet_region_island['ISLAND'][lab_chk.index(row['institut'].upper() )]
+        else:
+            row['region'] = ''
+            row['island'] = ''
+    
+    if row['beta_lact'] in ['1.0','1','Y','yes','YES','+']: (done)
+        row['beta_lact'] = '+'
+    elif row['beta_lact'] in ['0','N','n','NO','no','-']: (done)
+        row['beta_lact'] = '-'
+    else:
+        row['beta_lact'] = ''
+
+    
+    if row['carbapenem'] in ['1.0','1','Y','yes','YES','+']: (done)
+        row['carbapenem'] = '+'
+    elif row['carbapenem'] in ['0','N','n','NO','no','-']: (done)
+        row['carbapenem'] = '-'
+    else:
+        row['carbapenem'] = ''
+
+    if 'nb' in str(row['age']) or 'NB' in str(row['age']):
+                row['age'] = '0d'
+    
+    age = str(row['age']).strip().upper()  # Convert age to string, trim, and make uppercase for uniformity
+
+    # Check for 'nan', empty, or non-digit (excluding known abbreviations) values
+    if pd.isna(age) or age == '' or (not age.isdigit() and all(x not in age for x in ['W', 'D', 'M', 'NB', 'Y'])):
+        row['age_grp'] = 'U'
+    # Check for known age-related abbreviations
+    elif any(x in age for x in ['W', 'D', 'M', 'NB', 'Y']):
+        row['age_grp'] = 'A'
+    else:
+        # Convert age to float and categorize
+        age_value = float(age)
+        if 0 <= age_value < 5:
+            row['age_grp'] = 'A'
+        elif 5 <= age_value <= 19:
+            row['age_grp'] = 'B'
+        elif 19 < age_value <= 64:
+            row['age_grp'] = 'C'
+        elif age_value > 64:
+            row['age_grp'] = 'D'
+        else:
+            row['age_grp'] = 'U'
