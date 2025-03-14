@@ -2,9 +2,7 @@ library(tidyverse)
 library(readxl)
 library(dplyr)
 library(svDialogs)
-library(xlsx)
 library(conflicted)
-library(DBI)
 library(lubridate)
 
 conflicts_prefer(dplyr::filter)
@@ -13,11 +11,11 @@ conflicts_prefer(dplyr::lag)
 
 
 #set working directory
-setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd("C:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
 data_cleaning <- function(site_code){
   #load data
-  df <- read.csv(paste0("site_df/",site_code,"_raw_df.csv"))
+  df <- read.csv(paste0("site_df/",site_code ,"_raw_df.csv"))
   
   #change column names case to upper
   names(df) <- toupper(names(df))
@@ -27,45 +25,57 @@ data_cleaning <- function(site_code){
   # Convert mixed formats to YYYY-MM-DD
   df$DATE_BIRTH <- ifelse(
     grepl("-", df$DATE_BIRTH), 
-    format(as.Date(substr(df$DATE_BIRTH, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
-    format(as.Date(mdy(df$DATE_BIRTH)))            # Handle MM/DD/YYYY
+    format(as.Date(ymd_hms(df$DATE_BIRTH))),  # Handle YYYY-MM-DD HH:MM:SS
+    ifelse(
+      grepl("/", df$DATE_BIRTH) & grepl(":", df$DATE_BIRTH), 
+      format(as.Date(mdy_hm(df$DATE_BIRTH))), # Handle MM/DD/YYYY HH:MM
+      format(as.Date(mdy(df$DATE_BIRTH)))     # Handle MM/DD/YYYY
+    )
   )
   
   
   df$DATE_DATA <- ifelse(
     grepl("-", df$DATE_DATA), 
-    format(as.Date(substr(df$DATE_DATA, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
-    format(as.Date(mdy(df$DATE_DATA)))            # Handle MM/DD/YYYY
+    format(as.Date(ymd_hms(df$DATE_DATA))),  # Handle YYYY-MM-DD HH:MM:SS
+    ifelse(
+      grepl("/", df$DATE_DATA) & grepl(":", df$DATE_DATA), 
+      format(as.Date(mdy_hm(df$DATE_DATA))), # Handle MM/DD/YYYY HH:MM
+      format(as.Date(mdy(df$DATE_DATA)))     # Handle MM/DD/YYYY
+    )
   )
   
   
   df$DATE_ADMIS <- ifelse(
     grepl("-", df$DATE_ADMIS), 
-    format(as.Date(substr(df$DATE_ADMIS, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
-    format(as.Date(mdy(df$DATE_ADMIS)))            # Handle MM/DD/YYYY
+    format(as.Date(ymd_hms(df$DATE_ADMIS))),  # Handle YYYY-MM-DD HH:MM:SS
+    ifelse(
+      grepl("/", df$DATE_ADMIS) & grepl(":", df$DATE_ADMIS), 
+      format(as.Date(mdy_hm(df$DATE_ADMIS))), # Handle MM/DD/YYYY HH:MM
+      format(as.Date(mdy(df$DATE_ADMIS)))     # Handle MM/DD/YYYY
+    )
   )
   
   
   df$SPEC_DATE <- ifelse(
     grepl("-", df$SPEC_DATE), 
-    format(as.Date(substr(df$SPEC_DATE, 1, 10))),  # Handle YYYY-MM-DD (ignore time)
-    format(as.Date(mdy(df$SPEC_DATE)))            # Handle MM/DD/YYYY
+    format(as.Date(ymd_hms(df$SPEC_DATE))),  # Handle YYYY-MM-DD HH:MM:SS
+    ifelse(
+      grepl("/", df$SPEC_DATE) & grepl(":", df$SPEC_DATE), 
+      format(as.Date(mdy_hm(df$SPEC_DATE))), # Handle MM/DD/YYYY HH:MM
+      format(as.Date(mdy(df$SPEC_DATE)))     # Handle MM/DD/YYYY
+    )
   )
   
   
   
-  #df$DATE_BIRTH <- ifelse(grepl("-", df$DATE_BIRTH), format(as.Date(ymd_hm(df$DATE_BIRTH))), 
-  #                        format(as.Date(mdy_hm(df$DATE_BIRTH))))
-  
-  
+  #set x_referred value to 0
+  df$X_REFERRED <- 1
   
   #remove NAN values
   df[df == 'nan'] <- ''
   df[df == 'NaN'] <- ''
   df[df == 'NaT'] <- ''
   df[is.na(df)] <- ''
-  
-  
   
   df_clean <- df
   
@@ -215,10 +225,8 @@ data_cleaning <- function(site_code){
   df_clean$SEX <- tolower(df_clean$SEX)
   df_clean$SEX <- ifelse(df_clean$SEX %in% c('f','m'), df_clean$SEX, '')
   
-  
-  
   #Complete Laboratory Location Details
-  df_site_address <- read.xlsx("reference/whonet_codes_2024.xlsx", sheetName = "LABORATORY")
+  df_site_address <- read_excel("reference/whonet_codes_2024.xlsx", "LABORATORY")
   
   #retain needed columns only
   df_site_address <-  subset(df_site_address, select = c(LABORATORY, COUNTRY_A,REGION,ISLAND))
@@ -239,7 +247,7 @@ data_cleaning <- function(site_code){
   
   
   #Complete Age Group Details
-  df_age_group <- read.xlsx("reference/whonet_codes_2024.xlsx", sheetName = "AGE")
+  df_age_group <- read_excel("reference/whonet_codes_2024.xlsx", "AGE")
   
   #merge dataframe based on age
   df_clean <- merge(df_clean,df_age_group, by = c('AGE'), all.x = TRUE)
@@ -253,7 +261,7 @@ data_cleaning <- function(site_code){
   
   
   #Check and Correct SPECIMENT CODE, TYPE, AND SPEC_ARS
-  df_specimen <- read.xlsx("reference/whonet_codes_2024.xlsx", sheetName = "SPECIMEN")
+  df_specimen <- read_excel("reference/whonet_codes_2024.xlsx", "SPECIMEN")
   
   #remove some columns
   df_specimen <-  subset(df_specimen, select = -c(HUMAN, ENGLISH, ENGLISH_ARS, specimen.type))
@@ -277,11 +285,36 @@ data_cleaning <- function(site_code){
   names(df_clean)[names(df_clean) == 'SPEC_CODE.y'] <- 'SPEC_CODE'
   
   
+  #Check and Correct SPECIMEN CODE, TYPE, AND SPEC_ARS
+  df_organism <- read_excel("reference/whonet_codes_2024.xlsx","ORGANISM")
+  
+  #remove some columns
+  df_organism <-  subset(df_organism, select = c(ORGANISM, ORG_ARS, GRAM))
+  
+  
+  #merge dataframe based on organism
+  df_clean <- merge(df_clean,df_organism, by = c('ORGANISM'), all.x = TRUE)
+  
+  #remove duplicates based on ID
+  df_clean <- df_clean[!duplicated(df_clean$ID.1), ]
+  
+  
+  #remove existing org_type column
+  df_clean <- subset(df_clean, select = -c(ORG_TYPE))
+  
+  #Rename columns
+  names(df_clean)[names(df_clean) == 'ORGANISM'] <- 'LOCAL_ORGANISM'
+  names(df_clean)[names(df_clean) == 'ORG_ARS'] <- 'ORGANISM'
+  names(df_clean)[names(df_clean) == 'GRAM'] <- 'ORG_TYPE'
   
   
   #Check and Correct WARD, DEPARTMENT, AND WARD TYPE
-  df_ward <- read.xlsx("reference/2024_DATA_ward.xlsx", sheetName = site_code)
-  df_ward <- subset(df_ward, select = c('WARD', 'S_WARD', 'DEPARTMENT', 'WARD_TYPE'))
+  df_ward <- read_excel("reference/2024_DATA_ward.xlsx", site_code)
+  
+  #change column names case to upper
+  names(df_ward) <- toupper(names(df_ward))
+  
+  df_ward <- subset(df_ward, select = c('WARD', 'WARD+', 'DEPARTMENT', 'WARD_TYPE'))
   df_ward$WARD_TYPE <- tolower(df_ward$WARD_TYPE) 
   
   #merge dataframe based on age
@@ -289,7 +322,7 @@ data_cleaning <- function(site_code){
   
   #Rename columns
   names(df_clean)[names(df_clean) == 'WARD'] <- 'LOCAL_WARD'
-  names(df_clean)[names(df_clean) == 'S_WARD'] <- 'WARD'
+  names(df_clean)[names(df_clean) == 'WARD+'] <- 'WARD'
   
   
   #remove duplicate columns from merge
@@ -312,6 +345,7 @@ data_cleaning <- function(site_code){
   # Compute the difference between the two date columns
   df_clean$date_diff <- as.Date(as.character(df_clean$SPEC_DATE), format="%Y-%m-%d")-
     as.Date(as.character(df_clean$DATE_ADMIS), format="%Y-%m-%d")
+  
   
   #convert string to number
   df_clean$date_diff <- as.numeric(df_clean$date_diff)
@@ -396,8 +430,16 @@ data_cleaning <- function(site_code){
   
   
   #get HLAR and HLARB result
+  #list ENT organisms
+  ent_group <- read_excel("reference/ORG GROUPINGS_09042024.xlsx", "ent")
+  ent_org <- ent_group$ORG
   
   df_hlar <- subset(df_clean, select = c('ID.1', 'PATIENT_ID', 'ORGANISM','GEH_NM','STH_NM'))
+  
+  
+  #retain only ent organism
+  df_hlar <- df_hlar[df_hlar$ORGANISM %in% ent_org, ]
+  
   
   
   #convert string to numeric
@@ -406,9 +448,6 @@ data_cleaning <- function(site_code){
   
   
   
-  #list ENT organisms
-  ent_group <- read.xlsx("reference/ORG GROUPINGS_09042024.xlsx", sheetName = "ent")
-  ent_org <- ent_group$ORG
   
   #HLAR Result for GEH
   df_hlar$GEH_HLAR <- ifelse(!is.na(df_hlar$GEH_NM) & (df_hlar$ORGANISM %in% ent_org & df_hlar$GEH_NM == 512), '-', 
@@ -435,9 +474,8 @@ data_cleaning <- function(site_code){
   df_clean <- merge(df_clean,df_hlar, by = c('ID.1'), all.x = TRUE)
   
   
-  
   #list of columns to retain based on sample dataframe
-  df_sample <- read.xlsx("reference/colnames_list.xlsx", sheetName = "col_name")
+  df_sample <- read_excel("reference/colnames_list.xlsx", "col_name")
   colnames_sample <- df_sample$col_names
   
   
@@ -458,9 +496,10 @@ data_cleaning <- function(site_code){
   #INSTIT NAN to Site code
   df_clean$INSTITUT[df_clean$INSTITUT == 'NAN'] <- site_code
   
-  writexl::write_xlsx(df_clean,  path =paste0("output/",site_code,"_data_cleaned.xlsx"))
   
-  return(data.frame(df_Clean))
+  writexl::write_xlsx(df_clean,  path =paste0("output/regular_data/",site_code,"_regular_data_cleaned.xlsx"))
+  
+  return(data.frame(df_clean))
   
 }
 
