@@ -36,10 +36,16 @@ data_cleaning <- function(site_code){
   df$DATE_DATA <- parse_date_time(df$DATE_DATA, orders = date_formats)
   df$DATE_ADMIS <- parse_date_time(df$DATE_ADMIS, orders = date_formats)
   df$SPEC_DATE <- parse_date_time(df$SPEC_DATE, orders = date_formats)
+  
+  #convert date/time to character
+  df$DATE_BIRTH <- as.character(df$DATE_BIRTH)
+  df$DATE_DATA <- as.character(df$DATE_DATA)
+  df$DATE_ADMIS <- as.character(df$DATE_ADMIS)
+  df$SPEC_DATE <- as.character(df$SPEC_DATE)
  
   
-  #set x_referred value to 0
-  df$X_REFERRED <- 1
+  #set x_referred value to blank for regular data
+  df$X_REFERRED <- ''
   
   #remove NAN values
   df[df == 'nan'] <- ''
@@ -51,7 +57,7 @@ data_cleaning <- function(site_code){
   
   #code to retain abx numeric results only
   # Define the columns to modify
-  cols_to_modify <- c(51:ncol(df))
+  cols_to_modify <- c(52:ncol(df))
   
   # Define the values to remove
   values_to_remove <- c("R", "I", "S", "SDD", "NS")
@@ -176,6 +182,8 @@ data_cleaning <- function(site_code){
     mutate(across(all_of(pheno_cols), ~ case_when(
       as.character(.) == "1" ~ "+",
       as.character(.) == "0" ~ "-",
+      as.character(.) == "++" ~ "+",   # Replace ++ with +
+      as.character(.) == "--" ~ "-",   # Replace -- with -
       tolower(as.character(.)) == "p" ~ "+",  # Replace P or p with +
       tolower(as.character(.)) == "n" ~ "-",  # Replace N or n with -
       tolower(as.character(.)) == "y" ~ "+",  # Replace y or Y with +
@@ -184,6 +192,7 @@ data_cleaning <- function(site_code){
       . %in% c("+", "-") ~ .,   # Keep existing + or - values
       TRUE ~ ""                 # Replace all other values with blank
     )))
+  
   
   
   
@@ -311,16 +320,22 @@ data_cleaning <- function(site_code){
   
   
   #NOSOCOMIAL
-  # calculate date differential
-  # Compute the difference between the two date columns
-  df_clean$date_diff <- as.Date(as.character(df_clean$SPEC_DATE), format="%Y-%m-%d")-
-    as.Date(as.character(df_clean$DATE_ADMIS), format="%Y-%m-%d")
+  df_clean <- df_clean %>%
+    mutate(
+      date_diff = as.numeric(as.Date(as.character(SPEC_DATE), format="%Y-%m-%d") - 
+                               as.Date(as.character(DATE_ADMIS), format="%Y-%m-%d")),
+      NOSOCOMIAL = case_when(
+        WARD_TYPE == 'out' ~ 'O',
+        WARD_TYPE == 'in' & DATE_ADMIS == '' ~ 'X',
+        WARD_TYPE == 'in' & !is.na(date_diff) & date_diff <= 2 ~ 'Y',
+        WARD_TYPE == 'in' & !is.na(date_diff) & date_diff > 2 ~ 'N',
+        TRUE ~ ''  # Default case if no condition matches
+      )
+    )
   
   
-  #convert string to number
-  df_clean$date_diff <- as.numeric(df_clean$date_diff)
-  
-  df_clean$NOSOCOMIAL <- ifelse(!is.na(df_clean$date_diff) & df_clean$date_diff <= 4, 'Y','')
+  #identify unknown nosocomial
+  df_clean$NOSOCOMIAL <- ifelse(df_clean$SPEC_TYPE != 'qc' & df_clean$NOSOCOMIAL == '','U',df_clean$NOSOCOMIAL)
   
   
   
