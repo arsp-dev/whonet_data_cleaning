@@ -11,7 +11,7 @@ conflicts_prefer(dplyr::lag)
 
 
 #set working directory
-setwd("C:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
 data_cleaning <- function(site_code){
   #load data
@@ -23,48 +23,36 @@ data_cleaning <- function(site_code){
   
   
   # Convert mixed formats to YYYY-MM-DD
-  df$DATE_BIRTH <- ifelse(
-    grepl("-", df$DATE_BIRTH), 
-    format(as.Date(ymd_hms(df$DATE_BIRTH))),  # Handle YYYY-MM-DD HH:MM:SS
-    ifelse(
-      grepl("/", df$DATE_BIRTH) & grepl(":", df$DATE_BIRTH), 
-      format(as.Date(mdy_hm(df$DATE_BIRTH))), # Handle MM/DD/YYYY HH:MM
-      format(as.Date(mdy(df$DATE_BIRTH)))     # Handle MM/DD/YYYY
-    )
-  )
+  # Function to safely parse dates with multiple formats
+  parse_date <- function (date_str){
+    if (is.na(date_str) || date_str == "NaT") {
+      return(NA_character_)
+    }
+    
+    # Try parsing with different formats
+    parsed_date <- tryCatch({
+      if (grepl("-", date_str)) {
+        format(as.Date(ymd_hms(date_str)))  # Handle YYYY-MM-DD HH:MM:SS
+      } else if (grepl("/", date_str) & grepl(":", date_str)) {
+        format(as.Date(mdy_hm(date_str)))   # Handle MM/DD/YYYY HH:MM
+      } else if (grepl("/", date_str)) {
+        format(as.Date(mdy(date_str)))      # Handle MM/DD/YYYY
+      } else {
+        NA_character_  # Return NA for unrecognized formats
+      }
+    }, error = function(e) {
+      NA_character_  # Return NA if parsing fails
+    })
+    
+    return(parsed_date)
+    
+  }
   
-  
-  df$DATE_DATA <- ifelse(
-    grepl("-", df$DATE_DATA), 
-    format(as.Date(ymd_hms(df$DATE_DATA))),  # Handle YYYY-MM-DD HH:MM:SS
-    ifelse(
-      grepl("/", df$DATE_DATA) & grepl(":", df$DATE_DATA), 
-      format(as.Date(mdy_hm(df$DATE_DATA))), # Handle MM/DD/YYYY HH:MM
-      format(as.Date(mdy(df$DATE_DATA)))     # Handle MM/DD/YYYY
-    )
-  )
-  
-  
-  df$DATE_ADMIS <- ifelse(
-    grepl("-", df$DATE_ADMIS), 
-    format(as.Date(ymd_hms(df$DATE_ADMIS))),  # Handle YYYY-MM-DD HH:MM:SS
-    ifelse(
-      grepl("/", df$DATE_ADMIS) & grepl(":", df$DATE_ADMIS), 
-      format(as.Date(mdy_hm(df$DATE_ADMIS))), # Handle MM/DD/YYYY HH:MM
-      format(as.Date(mdy(df$DATE_ADMIS)))     # Handle MM/DD/YYYY
-    )
-  )
-  
-  
-  df$SPEC_DATE <- ifelse(
-    grepl("-", df$SPEC_DATE), 
-    format(as.Date(ymd_hms(df$SPEC_DATE))),  # Handle YYYY-MM-DD HH:MM:SS
-    ifelse(
-      grepl("/", df$SPEC_DATE) & grepl(":", df$SPEC_DATE), 
-      format(as.Date(mdy_hm(df$SPEC_DATE))), # Handle MM/DD/YYYY HH:MM
-      format(as.Date(mdy(df$SPEC_DATE)))     # Handle MM/DD/YYYY
-    )
-  )
+  # Apply the function to the DATE_BIRTH column
+  df$DATE_BIRTH <- sapply(df$DATE_BIRTH, parse_date)
+  df$DATE_DATA <- sapply(df$DATE_DATA, parse_date)
+  df$DATE_ADMIS <- sapply(df$DATE_ADMIS, parse_date)
+  df$SPEC_DATE <- sapply(df$SPEC_DATE, parse_date)
   
   
   
