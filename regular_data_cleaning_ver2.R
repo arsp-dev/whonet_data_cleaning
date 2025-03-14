@@ -13,6 +13,7 @@ conflicts_prefer(dplyr::lag)
 #set working directory
 setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
+
 data_cleaning <- function(site_code){
   #load data
   df <- read.csv(paste0("site_df/",site_code ,"_raw_df.csv"))
@@ -23,38 +24,19 @@ data_cleaning <- function(site_code){
   
   
   # Convert mixed formats to YYYY-MM-DD
-  # Function to safely parse dates with multiple formats
-  parse_date <- function (date_str){
-    if (is.na(date_str) || date_str == "NaT") {
-      return(NA_character_)
-    }
-    
-    # Try parsing with different formats
-    parsed_date <- tryCatch({
-      if (grepl("-", date_str)) {
-        format(as.Date(ymd_hms(date_str)))  # Handle YYYY-MM-DD HH:MM:SS
-      } else if (grepl("/", date_str) & grepl(":", date_str)) {
-        format(as.Date(mdy_hm(date_str)))   # Handle MM/DD/YYYY HH:MM
-      } else if (grepl("/", date_str)) {
-        format(as.Date(mdy(date_str)))      # Handle MM/DD/YYYY
-      } else {
-        NA_character_  # Return NA for unrecognized formats
-      }
-    }, error = function(e) {
-      NA_character_  # Return NA if parsing fails
-    })
-    
-    return(parsed_date)
-    
-  }
+  # Define the possible date formats
+  date_formats <- c(
+    "ymd HMS",  # YYYY-MM-DD HH:MM:SS
+    "mdy HM",   # MM/DD/YYYY HH:MM
+    "mdy"       # MM/DD/YYYY
+  )
   
-  # Apply the function to the DATE_BIRTH column
-  df$DATE_BIRTH <- sapply(df$DATE_BIRTH, parse_date)
-  df$DATE_DATA <- sapply(df$DATE_DATA, parse_date)
-  df$DATE_ADMIS <- sapply(df$DATE_ADMIS, parse_date)
-  df$SPEC_DATE <- sapply(df$SPEC_DATE, parse_date)
-  
-  
+  # Use parse_date_time to handle multiple formats in a vectorized way
+  df$DATE_BIRTH <- parse_date_time(df$DATE_BIRTH, orders = date_formats)
+  df$DATE_DATA <- parse_date_time(df$DATE_DATA, orders = date_formats)
+  df$DATE_ADMIS <- parse_date_time(df$DATE_ADMIS, orders = date_formats)
+  df$SPEC_DATE <- parse_date_time(df$SPEC_DATE, orders = date_formats)
+ 
   
   #set x_referred value to 0
   df$X_REFERRED <- 1
