@@ -15,6 +15,9 @@ conflicts_prefer(dplyr::lag)
 #set working directory
 setwd("D:/ALLYSA FILES/DMU Projects/regular_data_cleaning")
 
+get_file <- dlgInput("Enter a filename (e.g. 24PHL)", Sys.info()[" "])$res
+
+
 
 getDataFrameFromRawDB <- function(x) {
   db <- 'dmu_whonet'  #provide the name of your db
@@ -47,7 +50,7 @@ whonet_rawfilename.file_name LIKE '%", x, "%'"))
 }
 
 # Example usage: Query for rows where the file_name contains '24PHL'
-df <- getDataFrameFromRawDB("24PHL")
+df <- getDataFrameFromRawDB(get_file)
 
 
 #write.csv(df, "site_df/df_2024.csv")
