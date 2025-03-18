@@ -516,7 +516,31 @@ data_cleaning <- function(site_code){
 }
 
 BGH_data_cleaned <- data_cleaning('BGH')
-
+BRH_data_cleaned <- data_cleaning('BRH')
+BRT_data_cleaned <- data_cleaning('BRT')
+CMC_data_cleaned <- data_cleaning('CMC')
+CRH_data_cleaned <- data_cleaning('CRH')
+CVM_data_cleaned <- data_cleaning('CVM')
+DMC_data_cleaned <- data_cleaning('DMC')
+EVR_data_cleaned <- data_cleaning('EVR')
+FEU_data_cleaned <- data_cleaning('FEU')
+GMH_data_cleaned <- data_cleaning('GMH')
+JLM_data_cleaned <- data_cleaning('JLM')
+LCP_data_cleaned <- data_cleaning('LCP')
+MAR_data_cleaned <- data_cleaning('MAR')
+MMH_data_cleaned <- data_cleaning('MMH')
+NKI_data_cleaned <- data_cleaning('NKI')
+NMC_data_cleaned <- data_cleaning('NMC')
+ONP_data_cleaned <- data_cleaning('ONP')
+PGH_data_cleaned <- data_cleaning('PGH')
+RMC_data_cleaned <- data_cleaning('RMC')
+RTH_data_cleaned <- data_cleaning('RTH')
+RTM_data_cleaned <- data_cleaning('RTM')
+SLH_data_cleaned <- data_cleaning('SLH')
+STU_data_cleaned <- data_cleaning('STU')
+VSM_data_cleaned <- data_cleaning('VSM')
+ZMC_data_cleaned <- data_cleaning('ZMC')
+ZPH_data_cleaned <- data_cleaning('ZPH')
 
 
 

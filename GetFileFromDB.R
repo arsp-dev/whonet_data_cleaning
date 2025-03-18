@@ -56,10 +56,9 @@ df <- getDataFrameFromRawDB(get_file)
 #write.csv(df, "site_df/df_2024.csv")
 
 
-site_code <- c('BGH')
 
-#site_code <- c('BGH','BRH','BRT','CMC','CRH','CVM','DMC','EVR','FEU','GMH','JLM','LCP','MAR','MMH','NKI',
-#               'NMC','ONP','PGH', 'RMC','RTH','RTM','SLH','STU','VSM','ZMC','ZPH')
+site_code <- c('BGH','BRH','BRT','CMC','CRH','CVM','DMC','EVR','FEU','GMH','JLM','LCP','MAR','MMH','NKI',
+               'NMC','ONP','PGH', 'RMC','RTH','RTM','SLH','STU','VSM','ZMC','ZPH')
 
 
 save_site_data <- function(site_code, df) {
