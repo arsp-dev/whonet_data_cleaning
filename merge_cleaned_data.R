@@ -9,7 +9,7 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::lag)
 
 #set working directory
-setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd(set_wd)
 
 merge_data <- function(site_code){
   #load data

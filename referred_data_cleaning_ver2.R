@@ -12,7 +12,7 @@ conflicts_prefer(dplyr::lag)
 
 
 #set working directory
-setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd(set_wd)
 
 
 #referred_filename <- "Combined Data on Referred Isolates_3.14.25"

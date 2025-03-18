@@ -12,12 +12,14 @@ conflicts_prefer(dplyr::lag)
 
 
 
-#set working directory
-setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
-
+set_wd <- dlgInput("Enter a file directory:", Sys.info()[" "])$res
 get_file <- dlgInput("Enter a filename (e.g. 24PHL)", Sys.info()[" "])$res
-
 get_referred_filename <- dlgInput("Enter a Referred Data filename: ", Sys.info()[" "])$res
+
+
+#set working directory
+setwd(set_wd)
+
 
 getDataFrameFromRawDB <- function(x) {
   db <- 'dmu_whonet'  #provide the name of your db
