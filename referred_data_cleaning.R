@@ -12,16 +12,17 @@ conflicts_prefer(dplyr::lag)
 
 
 #set working directory
-setwd("C:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
+
+referred_file <- "Combined Data on Referred Isolates_3.14.25"
 
 #load data
-df <- read_excel("reference/Combined Data on 2024 Referred Isolates_3.10.25.xlsx", "Sentinel Site")
+df <- read_excel(paste0("reference/",referred_file,".xlsx"), "Sentinel Site")
 
 
 #change column names case to upper
 names(df) <- toupper(names(df))
-
 
 # Convert mixed formats to YYYY-MM-DD
 df$DATE_BIRTH <- ifelse(
@@ -51,8 +52,26 @@ df$SPEC_DATE <- ifelse(
 df$DATE_DATA <- ""
 
 
+
+
+#set x_referred value to blank for regular data
+df$X_REFERRED <- '1'
+
+
+
 #remove NAN values
 df[is.na(df)] <- ''
+
+
+df_clean <- df
+
+
+
+
+
+
+
+
 
 
 data_cleaning <- function(site_code){

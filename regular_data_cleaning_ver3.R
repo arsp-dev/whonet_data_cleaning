@@ -208,6 +208,8 @@ data_cleaning <- function(site_code){
   df_clean$SEX <- tolower(df_clean$SEX)
   df_clean$SEX <- ifelse(df_clean$SEX %in% c('f','m'), df_clean$SEX, '')
   
+  df_clean$LABORATORY <- site_code
+  
   #Complete Laboratory Location Details
   df_site_address <- read_excel("reference/whonet_codes_2024.xlsx", "LABORATORY")
   
@@ -484,8 +486,8 @@ data_cleaning <- function(site_code){
   df_clean[df_clean == 'NaT'] <- ''
   df_clean[is.na(df_clean)] <- ''
   
-  #INSTIT NAN to Site code
-  df_clean$INSTITUT[df_clean$INSTITUT == 'NAN'] <- site_code
+  #INSTIT to Site code
+  df_clean$INSTITUT <- site_code
   
   
   writexl::write_xlsx(df_clean,  path =paste0("output/regular_data/",site_code,"_regular_data_cleaned.xlsx"))

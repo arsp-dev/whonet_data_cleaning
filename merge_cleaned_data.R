@@ -9,7 +9,7 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::lag)
 
 #set working directory
-setwd("C:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
 
 merge_data <- function(site_code){
   #load data
@@ -30,6 +30,7 @@ merge_data <- function(site_code){
   
   
   return(data.frame(df_merged_data))
+  
   
 }
 
@@ -60,3 +61,10 @@ STU_data_merge <- merge_data('STU')
 VSM_data_merge <- merge_data('VSM')
 ZMC_data_merge <- merge_data('ZMC')
 ZPH_data_merge <- merge_data('ZPH')
+
+
+
+
+
+
+
