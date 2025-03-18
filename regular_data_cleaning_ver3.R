@@ -10,10 +10,10 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::lag)
 
 
-
 #set working directory
-setwd(set_wd)
-
+setwd("D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning")
+#set working directory
+#setwd(set_wd)
 
 
 data_cleaning <- function(site_code){
@@ -58,13 +58,9 @@ data_cleaning <- function(site_code){
     
     df_clean <- df
     
-    
-    #RUn AMR for R to clean antibiotic values
-    df_clean <- df_clean %>%
+    df_clean <- df %>%
       mutate(across(AMK_ND30:AMX_ND30, as.disk)) %>%
       mutate(across(AMK_NM:AMX_NE, as.mic))
-    
-    
     
     
     #SPN RULE
@@ -219,7 +215,7 @@ data_cleaning <- function(site_code){
     
     
     #merge dataframe based on LABORATORY
-    df_clean <- merge(df,df_site_address, by = c('LABORATORY'), all.x = TRUE)
+    df_clean <- merge(df_clean,df_site_address, by = c('LABORATORY'), all.x = TRUE)
     
     #remove duplicate columns from merge
     drops <- c('COUNTRY_A.x','REGION.x','ISLAND.x')
@@ -490,6 +486,7 @@ data_cleaning <- function(site_code){
     #INSTIT to Site code
     df_clean$INSTITUT <- site_code
     
+   
     
     writexl::write_xlsx(df_clean,  path =paste0("output/regular_data/",site_code,"_regular_data_cleaned.xlsx"))
     

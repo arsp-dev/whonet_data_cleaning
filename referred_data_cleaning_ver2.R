@@ -15,7 +15,7 @@ conflicts_prefer(dplyr::lag)
 setwd(set_wd)
 
 
-#referred_filename <- "Combined Data on 2024 Referred Isolates_3.10.25"
+referred_filename <- "Combined Data on 2024 Referred Isolates_3.10.25"
 
 
 #load data
@@ -581,6 +581,9 @@ data_cleaning <- function(site_code){
     df_clean$TZD_NM <- ''
     df_clean$SSS_ND200 <- ''
     df_clean$SSS_NM <- ''
+    df_clean$NOV_ND5 <- ''
+    df_clean$NOV_NM <- ''
+    
     
     
     
@@ -658,3 +661,8 @@ STU_data_cleaned <- data_cleaning('STU')
 VSM_data_cleaned <- data_cleaning('VSM')
 ZMC_data_cleaned <- data_cleaning('ZMC')
 ZPH_data_cleaned <- data_cleaning('ZPH')
+
+
+
+missing_columns_df2 <- setdiff(names(BGH_data_cleaned), names(ONP_data_cleaned))
+print(missing_columns_df2)
