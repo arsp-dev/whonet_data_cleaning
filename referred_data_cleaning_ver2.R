@@ -4,22 +4,22 @@ library(dplyr)
 library(svDialogs)
 library(conflicted)
 library(lubridate)
-
+library(AMR)
 
 conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::lag)
 
 
-
+#set_wd <- "D:/ALLYSA FILES/DMU Projects/whonet_data_cleaning/"
 #set working directory
 setwd(set_wd)
 
 
-#referred_filename <- "Combined Data on Referred Isolates_3.14.25"
+#referred_filename <- "Combined Data on 2024 Referred Isolates_3.10.25"
 
 
 #load data
-df <- read_excel(paste0("reference/",referred_filename,".xlsx"), "Sentinel Site")
+df <- read_excel(paste0("reference/",referred_filename,".xlsx"), "ARSRL")
 
 
 #change column names case to upper
@@ -278,21 +278,21 @@ data_cleaning <- function(site_code){
     
     
     
-    #get phenotypic result from site_pre and site_pos
+    #get phenotypic result from ARSRL_PRE and ARSRL_POST
     df_clean <- df_clean %>%
       mutate(
-        AMPC = ifelse(is.na(AMPC) | AMPC == '' & grepl('ampC \\(\\+\\)', SITE_PRE), '+',
-                      ifelse(is.na(AMPC) | AMPC == '' & grepl('ampC \\(\\-\\)', SITE_PRE), '-', AMPC)),
-        ESBL = ifelse(is.na(ESBL) | ESBL == '' & grepl('ESBL \\(\\+\\)', SITE_PRE), '+',
-                      ifelse(is.na(ESBL) | ESBL == '' & grepl('ESBL \\(\\-\\)', SITE_PRE), '-', ESBL)),
-        MBL = ifelse(is.na(MBL) | MBL == '' & grepl('MBL \\(\\+\\)', SITE_PRE), '+',
-                     ifelse(is.na(MBL) | MBL == '' & grepl('MBL \\(\\-\\)', SITE_PRE), '-', MBL)),
-        BETA_LACT = ifelse(is.na(BETA_LACT) | BETA_LACT == '' & grepl('BL \\(\\+\\)', SITE_PRE), '+',
-                           ifelse(is.na(MBL) | BETA_LACT == '' & grepl('BL \\(\\-\\)', SITE_PRE), '-', BETA_LACT)),
-        X_MECA = ifelse(is.na(X_MECA) | X_MECA == '' & grepl('mecA \\(\\+\\)', SITE_POS), '+',
-                        ifelse(is.na(X_MECA) | X_MECA == '' & grepl('mecA \\(\\-\\)', SITE_POS), '-', X_MECA)),
-        INDUC_CLI = ifelse(is.na(INDUC_CLI) | INDUC_CLI == '' & grepl('ICR \\(\\+\\)', SITE_POS), '+',
-                           ifelse(is.na(INDUC_CLI) | INDUC_CLI == '' & grepl('ICR \\(\\-\\)', SITE_POS), '-', INDUC_CLI))
+        AMPC = ifelse(is.na(AMPC) | AMPC == '' & grepl('ampC \\(\\+\\)', ARSRL_PRE), '+',
+                      ifelse(is.na(AMPC) | AMPC == '' & grepl('ampC \\(\\-\\)', ARSRL_PRE), '-', AMPC)),
+        ESBL = ifelse(is.na(ESBL) | ESBL == '' & grepl('ESBL \\(\\+\\)', ARSRL_PRE), '+',
+                      ifelse(is.na(ESBL) | ESBL == '' & grepl('ESBL \\(\\-\\)', ARSRL_PRE), '-', ESBL)),
+        MBL = ifelse(is.na(MBL) | MBL == '' & grepl('MBL \\(\\+\\)', ARSRL_PRE), '+',
+                     ifelse(is.na(MBL) | MBL == '' & grepl('MBL \\(\\-\\)', ARSRL_PRE), '-', MBL)),
+        BETA_LACT = ifelse(is.na(BETA_LACT) | BETA_LACT == '' & grepl('BL \\(\\+\\)', ARSRL_PRE), '+',
+                           ifelse(is.na(MBL) | BETA_LACT == '' & grepl('BL \\(\\-\\)', ARSRL_PRE), '-', BETA_LACT)),
+        X_MECA = ifelse(is.na(X_MECA) | X_MECA == '' & grepl('mecA \\(\\+\\)', ARSRL_POST), '+',
+                        ifelse(is.na(X_MECA) | X_MECA == '' & grepl('mecA \\(\\-\\)', ARSRL_POST), '-', X_MECA)),
+        INDUC_CLI = ifelse(is.na(INDUC_CLI) | INDUC_CLI == '' & grepl('ICR \\(\\+\\)', ARSRL_POST), '+',
+                           ifelse(is.na(INDUC_CLI) | INDUC_CLI == '' & grepl('ICR \\(\\-\\)', ARSRL_POST), '-', INDUC_CLI))
       )
     
     
